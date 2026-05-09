@@ -16,6 +16,7 @@
       --good: #6ee7a8;
       --bad: #ff7b7b;
       --blue: #7db7ff;
+      --input: #11141a;
     }
 
     * {
@@ -29,7 +30,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.7;
-      padding-bottom: 86px;
+      padding-bottom: 92px;
     }
 
     header {
@@ -40,7 +41,7 @@
 
     .title {
       font-size: 28px;
-      font-weight: 800;
+      font-weight: 850;
       margin: 0 0 6px;
       letter-spacing: 0.03em;
     }
@@ -95,6 +96,11 @@
       margin: 0 0 10px;
     }
 
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -116,12 +122,12 @@
 
     .summary-value {
       font-size: 22px;
-      font-weight: 800;
+      font-weight: 850;
     }
 
     .race-card {
       cursor: pointer;
-      transition: transform 0.12s ease, border-color 0.12s ease;
+      transition: transform 0.12s ease;
     }
 
     .race-card:active {
@@ -130,7 +136,7 @@
 
     .race-title {
       font-size: 19px;
-      font-weight: 800;
+      font-weight: 850;
       margin-bottom: 6px;
     }
 
@@ -191,11 +197,7 @@
       font-size: 16px;
       font-weight: 650;
       white-space: pre-wrap;
-    }
-
-    .big-number {
-      font-size: 26px;
-      font-weight: 900;
+      word-break: break-word;
     }
 
     .plus {
@@ -216,6 +218,33 @@
       border-radius: 14px;
       padding: 12px;
       white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 14px 0 6px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--input);
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
     }
 
     .button {
@@ -223,11 +252,11 @@
       border: none;
       border-radius: 14px;
       padding: 13px 14px;
-      margin-top: 10px;
+      margin-top: 12px;
       background: var(--accent);
       color: #111;
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 850;
       cursor: pointer;
     }
 
@@ -235,6 +264,33 @@
       background: #2a2f3a;
       color: var(--text);
       border: 1px solid var(--line);
+    }
+
+    .button.danger {
+      background: #402025;
+      color: #ffb3b3;
+      border: 1px solid rgba(255,123,123,0.4);
+    }
+
+    .notice {
+      background: #12151b;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .notice.editing {
+      color: var(--accent);
+      border-color: rgba(244,197,66,0.45);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 10px;
     }
 
     nav {
@@ -245,7 +301,7 @@
       background: #11141a;
       border-top: 1px solid var(--line);
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
       z-index: 10;
     }
@@ -257,7 +313,7 @@
       font-size: 13px;
       padding: 8px 4px;
       border-radius: 12px;
-      font-weight: 700;
+      font-weight: 750;
     }
 
     nav button.active {
@@ -265,12 +321,22 @@
       color: var(--accent);
     }
 
-    .small {
-      font-size: 13px;
-      color: var(--muted);
+    @media (max-width: 360px) {
+      .title {
+        font-size: 24px;
+      }
+
+      .summary-value {
+        font-size: 19px;
+      }
+
+      nav button {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1 class="title">おじ競馬ログ</h1>
@@ -278,7 +344,6 @@
   </header>
 
   <main>
-    <!-- ホーム -->
     <section id="home" class="active">
       <div class="card">
         <h2>通算成績</h2>
@@ -292,12 +357,26 @@
             <div id="totalPayout" class="summary-value">0円</div>
           </div>
           <div class="summary-box">
+            <div class="summary-label">収支</div>
+            <div id="totalProfit" class="summary-value">0円</div>
+          </div>
+          <div class="summary-box">
             <div class="summary-label">回収率</div>
             <div id="totalReturnRate" class="summary-value">—</div>
           </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>記録数</h2>
+        <div class="summary-grid">
           <div class="summary-box">
-            <div class="summary-label">記録数</div>
-            <div id="totalRaces" class="summary-value">0</div>
+            <div class="summary-label">全記録</div>
+            <div id="totalRaces" class="summary-value">0件</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">見送り</div>
+            <div id="skipCount" class="summary-value">0件</div>
           </div>
         </div>
       </div>
@@ -306,12 +385,11 @@
         <h2>このサイトの目的</h2>
         <p>買ったレースも、見送ったレースも記録する。</p>
         <p>目的は、当てた自慢ではなく、次に同じミスを減らすこと。</p>
-        <p class="small">最初は1レースだけでも十分。続けることを優先する。</p>
-        <button class="button" data-view="list">記録一覧を見る</button>
+        <button class="button" data-view="add">新しい記録を追加する</button>
+        <button class="button secondary" data-view="list">記録一覧を見る</button>
       </div>
     </section>
 
-    <!-- 記録一覧 -->
     <section id="list">
       <div class="card">
         <h2>記録一覧</h2>
@@ -319,101 +397,222 @@
       </div>
     </section>
 
-    <!-- 詳細 -->
+    <section id="add">
+      <div class="card">
+        <h2 id="formTitle">新しい記録を追加</h2>
+
+        <div id="editNotice" class="notice editing" style="display:none;">
+          編集中です。保存すると、この記録を上書きします。
+        </div>
+
+        <label for="raceName">レース名</label>
+        <input id="raceName" type="text" placeholder="例：NHKマイルカップ" />
+
+        <label for="year">年</label>
+        <input id="year" type="number" inputmode="numeric" placeholder="例：2026" />
+
+        <label for="course">条件</label>
+        <input id="course" type="text" placeholder="例：東京芝1600" />
+
+        <label for="grade">グレード</label>
+        <input id="grade" type="text" placeholder="例：GⅠ / GⅡ / GⅢ / OP" />
+
+        <label for="decision">買う前判断</label>
+        <select id="decision">
+          <option value="買う">買う</option>
+          <option value="限定買い">限定買い</option>
+          <option value="馬連限定">馬連限定</option>
+          <option value="ワイド限定">ワイド限定</option>
+          <option value="見送り">見送り</option>
+        </select>
+
+        <label for="decisionReason">判断理由</label>
+        <textarea id="decisionReason"></textarea>
+
+        <label for="betType">券種</label>
+        <input id="betType" type="text" placeholder="例：馬連 / 三連複 / ワイド / なし" />
+
+        <label for="bets">買い目</label>
+        <textarea id="bets" placeholder="例：
+馬連6点
+◎A－○B
+◎A－△C"></textarea>
+
+        <label for="investment">投資額</label>
+        <input id="investment" type="number" inputmode="numeric" placeholder="例：600" />
+
+        <label for="first">1着</label>
+        <input id="first" type="text" />
+
+        <label for="second">2着</label>
+        <input id="second" type="text" />
+
+        <label for="third">3着</label>
+        <input id="third" type="text" />
+
+        <label for="payout">払戻額</label>
+        <input id="payout" type="number" inputmode="numeric" placeholder="例：0" />
+
+        <label for="reviewMainCause">回顧の主因</label>
+        <select id="reviewMainCause">
+          <option value="未回顧">未回顧</option>
+          <option value="能力評価ミス">能力評価ミス</option>
+          <option value="適性評価ミス">適性評価ミス</option>
+          <option value="展開読みミス">展開読みミス</option>
+          <option value="馬場読みミス">馬場読みミス</option>
+          <option value="枠順評価ミス">枠順評価ミス</option>
+          <option value="ローテ評価ミス">ローテ評価ミス</option>
+          <option value="状態評価ミス">状態評価ミス</option>
+          <option value="保留の扱いミス">保留の扱いミス</option>
+          <option value="消し馬の激走">消し馬の激走</option>
+          <option value="買い方ミス">買い方ミス</option>
+          <option value="見送り判断ミス">見送り判断ミス</option>
+          <option value="軸不在">軸不在</option>
+          <option value="判断OK">判断OK</option>
+        </select>
+
+        <label for="review">回顧メモ</label>
+        <textarea id="review"></textarea>
+
+        <label for="nextMemo">次回メモ</label>
+        <textarea id="nextMemo"></textarea>
+
+        <button class="button" id="saveRaceButton">保存する</button>
+        <button class="button secondary" id="cancelEditButton" style="display:none;">編集をキャンセル</button>
+        <button class="button secondary" id="clearFormButton">入力を消す</button>
+
+        <div class="notice">
+          保存した記録は、この端末のブラウザ内に保存されます。バックアップは「管理」画面のJSON書き出しを使います。
+        </div>
+      </div>
+    </section>
+
     <section id="detail">
       <div id="raceDetail"></div>
+    </section>
+
+    <section id="manage">
+      <div class="card">
+        <h2>データ管理</h2>
+        <p>JSONで書き出し・読み込みできます。</p>
+
+        <button class="button" id="exportButton">JSONを書き出す</button>
+
+        <label for="jsonBox">JSONデータ</label>
+        <textarea id="jsonBox" placeholder="書き出したJSONがここに表示されます。"></textarea>
+
+        <button class="button secondary" id="copyJsonButton">JSONをコピー</button>
+        <button class="button secondary" id="importButton">JSONを読み込む</button>
+
+        <div class="notice">
+          書き出したJSONは、メモアプリ・Googleドライブ・自分宛メールなどに保存しておくと安全です。
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>危険操作</h2>
+        <p class="small">全データ削除は取り消せません。</p>
+        <button class="button danger" id="deleteAllButton">全データを削除する</button>
+      </div>
     </section>
   </main>
 
   <nav>
     <button class="nav-button active" data-view="home">ホーム</button>
-    <button class="nav-button" data-view="list">記録一覧</button>
-    <button class="nav-button" data-view="detail">詳細</button>
+    <button class="nav-button" data-view="list">一覧</button>
+    <button class="nav-button" data-view="add">追加</button>
+    <button class="nav-button" data-view="manage">管理</button>
   </nav>
 
   <script>
-    // ==============================
-    // レース記録データ
-    // ここを書き換えれば、表示内容を変更できる
-    // ==============================
+    const STORAGE_KEY = "oji_keiba_log_v03";
 
-    const raceLogs = [
+    let raceLogs = [];
+    let currentRaceId = null;
+    let editingRaceId = null;
+
+    const sampleData = [
       {
-        id: "nhk-mile-2026",
+        id: "sample-nhk-mile-2026",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         raceName: "NHKマイルカップ",
         year: 2026,
         course: "東京芝1600",
         grade: "GⅠ",
         decision: "見送り",
-        decisionReason:
-          "人気で軸を作らず、レース質から主軸を作ろうとしたが、主軸候補を1頭に絞れなかったため。",
+        decisionReason: "人気で軸を作らず、レース質から主軸を作ろうとしたが、主軸候補を1頭に絞れなかったため。",
         betType: "なし",
-        bets: [
-          "買い目なし"
-        ],
+        bets: "買い目なし",
         investment: 0,
         payout: 0,
         result: {
-          first: "未入力",
-          second: "未入力",
-          third: "未入力"
+          first: "",
+          second: "",
+          third: ""
         },
         reviewMainCause: "軸不在",
-        review:
-          "難しいレースと判断して見送り。\n人気に流されず、主軸不在として処理できた点はよかった。\n主軸不在なら、馬連・三連複でごまかさない。",
-        nextMemo:
-          "人気で軸を作らない。\nレース質から主軸を作れない場合は見送り。\n見送りも成績として記録する。"
-      },
-      {
-        id: "sample-buy-2026",
-        raceName: "サンプル重賞",
-        year: 2026,
-        course: "中山芝2000",
-        grade: "GⅡ",
-        decision: "買う",
-        decisionReason:
-          "主軸の負けパターンが少なく、準軸と相手本線も整理できたため。",
-        betType: "馬連",
-        bets: [
-          "◎ サンプルホースA － ○ サンプルホースB",
-          "◎ サンプルホースA － △ サンプルホースC",
-          "◎ サンプルホースA － △ サンプルホースD"
-        ],
-        investment: 300,
-        payout: 0,
-        result: {
-          first: "サンプルホースC",
-          second: "サンプルホースA",
-          third: "サンプルホースE"
-        },
-        reviewMainCause: "相手評価ミス",
-        review:
-          "主軸は馬券内に来たが、準軸の評価が甘かった。\n馬連で買う場合、準軸の信頼度が足りないと回収につながりにくい。",
-        nextMemo:
-          "主軸だけでなく、準軸の負けパターンも確認する。\n準軸が弱いときは、馬連ではなくワイド寄りに落とす。"
+        review: "難しいレースと判断して見送り。\n人気に流されず、主軸不在として処理できた点はよかった。",
+        nextMemo: "主軸不在なら、馬連・三連複でごまかさない。\n見送りも成績として記録する。"
       }
     ];
 
-    let currentRaceId = raceLogs[0].id;
-
-    // ==============================
-    // 共通関数
-    // ==============================
-
     function yen(num) {
-      return Number(num).toLocaleString("ja-JP") + "円";
+      const value = Number(num || 0);
+      return value.toLocaleString("ja-JP") + "円";
     }
 
     function calcReturnRate(investment, payout) {
-      if (!investment || investment === 0) return "—";
-      return Math.round((payout / investment) * 100) + "%";
+      const inv = Number(investment || 0);
+      const pay = Number(payout || 0);
+      if (inv === 0) return "—";
+      return Math.round((pay / inv) * 100) + "%";
     }
 
     function profitClass(investment, payout) {
-      const profit = payout - investment;
+      const profit = Number(payout || 0) - Number(investment || 0);
       if (profit > 0) return "plus";
       if (profit < 0) return "minus";
       return "zero";
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function makeId() {
+      return "race-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    }
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(raceLogs));
+    }
+
+    function loadFromStorage() {
+      const rawV03 = localStorage.getItem(STORAGE_KEY);
+      const rawV02 = localStorage.getItem("oji_keiba_log_v02");
+
+      const raw = rawV03 || rawV02;
+
+      if (!raw) {
+        raceLogs = sampleData;
+        saveToStorage();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        raceLogs = Array.isArray(parsed) ? parsed : [];
+        saveToStorage();
+      } catch (error) {
+        raceLogs = [];
+        alert("保存データの読み込みに失敗しました。");
+      }
     }
 
     function showView(viewId) {
@@ -430,46 +629,65 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    // ==============================
-    // ホーム描画
-    // ==============================
+    function renderAll() {
+      renderHome();
+      renderRaceList();
+      if (currentRaceId) renderDetail();
+    }
 
     function renderHome() {
-      const totalInvestment = raceLogs.reduce((sum, race) => sum + race.investment, 0);
-      const totalPayout = raceLogs.reduce((sum, race) => sum + race.payout, 0);
-      const totalReturnRate = calcReturnRate(totalInvestment, totalPayout);
+      const totalInvestment = raceLogs.reduce((sum, race) => sum + Number(race.investment || 0), 0);
+      const totalPayout = raceLogs.reduce((sum, race) => sum + Number(race.payout || 0), 0);
+      const totalProfit = totalPayout - totalInvestment;
+      const skipCount = raceLogs.filter(race => race.decision === "見送り").length;
 
       document.getElementById("totalInvestment").textContent = yen(totalInvestment);
       document.getElementById("totalPayout").textContent = yen(totalPayout);
-      document.getElementById("totalReturnRate").textContent = totalReturnRate;
-      document.getElementById("totalRaces").textContent = raceLogs.length + "件";
-    }
 
-    // ==============================
-    // 一覧描画
-    // ==============================
+      const profitEl = document.getElementById("totalProfit");
+      profitEl.textContent = yen(totalProfit);
+      profitEl.className = "summary-value " + profitClass(totalInvestment, totalPayout);
+
+      document.getElementById("totalReturnRate").textContent = calcReturnRate(totalInvestment, totalPayout);
+      document.getElementById("totalRaces").textContent = raceLogs.length + "件";
+      document.getElementById("skipCount").textContent = skipCount + "件";
+    }
 
     function renderRaceList() {
       const raceList = document.getElementById("raceList");
       raceList.innerHTML = "";
 
-      raceLogs.forEach(race => {
+      if (raceLogs.length === 0) {
+        raceList.innerHTML = `
+          <div class="empty">
+            まだ記録がありません。<br>
+            「追加」から最初のレースを保存してください。
+          </div>
+        `;
+        return;
+      }
+
+      const sortedLogs = [...raceLogs].sort((a, b) => {
+        return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+      });
+
+      sortedLogs.forEach(race => {
+        const investment = Number(race.investment || 0);
+        const payout = Number(race.payout || 0);
+        const profit = payout - investment;
+        const returnRate = calcReturnRate(investment, payout);
+        const pClass = profitClass(investment, payout);
+
         const card = document.createElement("div");
         card.className = "card card-light race-card";
-        card.dataset.id = race.id;
-
-        const returnRate = calcReturnRate(race.investment, race.payout);
-        const profit = race.payout - race.investment;
-        const pClass = profitClass(race.investment, race.payout);
-
         card.innerHTML = `
-          <div class="race-title">${race.raceName} ${race.year}</div>
-          <div class="race-meta">${race.course} / ${race.grade}</div>
+          <div class="race-title">${escapeHtml(race.raceName || "無題のレース")} ${escapeHtml(race.year || "")}</div>
+          <div class="race-meta">${escapeHtml(race.course || "")} / ${escapeHtml(race.grade || "")}</div>
           <div class="tag-row">
-            <span class="tag blue">${race.decision}</span>
-            <span class="tag">${race.betType}</span>
-            <span class="tag">投資 ${yen(race.investment)}</span>
-            <span class="tag">払戻 ${yen(race.payout)}</span>
+            <span class="tag blue">${escapeHtml(race.decision || "未入力")}</span>
+            <span class="tag">${escapeHtml(race.betType || "券種未入力")}</span>
+            <span class="tag">投資 ${yen(investment)}</span>
+            <span class="tag">払戻 ${yen(payout)}</span>
             <span class="tag ${pClass}">収支 ${yen(profit)}</span>
             <span class="tag">回収率 ${returnRate}</span>
           </div>
@@ -485,98 +703,97 @@
       });
     }
 
-    // ==============================
-    // 詳細描画
-    // ==============================
-
     function renderDetail() {
-      const race = raceLogs.find(item => item.id === currentRaceId) || raceLogs[0];
-      const returnRate = calcReturnRate(race.investment, race.payout);
-      const profit = race.payout - race.investment;
-      const pClass = profitClass(race.investment, race.payout);
+      const race = raceLogs.find(item => item.id === currentRaceId);
 
-      const betHtml = race.bets.map(bet => `<div class="item"><div class="value">${bet}</div></div>`).join("");
+      if (!race) {
+        document.getElementById("raceDetail").innerHTML = `
+          <div class="card">
+            <h2>詳細</h2>
+            <p>表示する記録がありません。</p>
+            <button class="button secondary" data-action="backToList">一覧へ戻る</button>
+          </div>
+        `;
+        bindDetailButtons();
+        return;
+      }
+
+      const investment = Number(race.investment || 0);
+      const payout = Number(race.payout || 0);
+      const profit = payout - investment;
+      const returnRate = calcReturnRate(investment, payout);
+      const pClass = profitClass(investment, payout);
 
       document.getElementById("raceDetail").innerHTML = `
         <div class="card">
-          <h2>${race.raceName} ${race.year}</h2>
-          <p class="small">${race.course} / ${race.grade}</p>
-
+          <h2>${escapeHtml(race.raceName || "無題のレース")} ${escapeHtml(race.year || "")}</h2>
+          <p class="small">${escapeHtml(race.course || "")} / ${escapeHtml(race.grade || "")}</p>
           <div class="tag-row">
-            <span class="tag blue">${race.decision}</span>
-            <span class="tag">${race.betType}</span>
+            <span class="tag blue">${escapeHtml(race.decision || "未入力")}</span>
+            <span class="tag">${escapeHtml(race.betType || "券種未入力")}</span>
             <span class="tag ${pClass}">収支 ${yen(profit)}</span>
           </div>
         </div>
 
         <div class="card">
           <h2>買う前判断</h2>
-
           <div class="item">
             <div class="label">判断</div>
-            <div class="value">${race.decision}</div>
+            <div class="value">${escapeHtml(race.decision || "")}</div>
           </div>
-
           <div class="item">
             <div class="label">判断理由</div>
-            <div class="value">${race.decisionReason}</div>
+            <div class="value">${escapeHtml(race.decisionReason || "")}</div>
           </div>
         </div>
 
         <div class="card">
           <h2>買い目</h2>
-
           <div class="item">
             <div class="label">券種</div>
-            <div class="value">${race.betType}</div>
+            <div class="value">${escapeHtml(race.betType || "")}</div>
           </div>
-
-          ${betHtml}
-
+          <div class="item">
+            <div class="label">買い目</div>
+            <div class="value">${escapeHtml(race.bets || "")}</div>
+          </div>
           <div class="item">
             <div class="label">投資額</div>
-            <div class="value">${yen(race.investment)}</div>
+            <div class="value">${yen(investment)}</div>
           </div>
         </div>
 
         <div class="card">
           <h2>結果</h2>
-
           <div class="item">
             <div class="label">1着</div>
-            <div class="value">${race.result.first}</div>
+            <div class="value">${escapeHtml(race.result?.first || "未入力")}</div>
           </div>
-
           <div class="item">
             <div class="label">2着</div>
-            <div class="value">${race.result.second}</div>
+            <div class="value">${escapeHtml(race.result?.second || "未入力")}</div>
           </div>
-
           <div class="item">
             <div class="label">3着</div>
-            <div class="value">${race.result.third}</div>
+            <div class="value">${escapeHtml(race.result?.third || "未入力")}</div>
           </div>
         </div>
 
         <div class="card">
           <h2>収支</h2>
-
           <div class="summary-grid">
             <div class="summary-box">
               <div class="summary-label">投資額</div>
-              <div class="summary-value">${yen(race.investment)}</div>
+              <div class="summary-value">${yen(investment)}</div>
             </div>
-
             <div class="summary-box">
               <div class="summary-label">払戻額</div>
-              <div class="summary-value">${yen(race.payout)}</div>
+              <div class="summary-value">${yen(payout)}</div>
             </div>
-
             <div class="summary-box">
               <div class="summary-label">収支</div>
               <div class="summary-value ${pClass}">${yen(profit)}</div>
             </div>
-
             <div class="summary-box">
               <div class="summary-label">回収率</div>
               <div class="summary-value">${returnRate}</div>
@@ -586,50 +803,339 @@
 
         <div class="card">
           <h2>回顧</h2>
-
           <div class="item">
             <div class="label">主因</div>
-            <div class="value">${race.reviewMainCause}</div>
+            <div class="value">${escapeHtml(race.reviewMainCause || "")}</div>
           </div>
 
           <h3>回顧メモ</h3>
-          <div class="memo">${race.review}</div>
+          <div class="memo">${escapeHtml(race.review || "")}</div>
 
           <h3>次回メモ</h3>
-          <div class="memo">${race.nextMemo}</div>
+          <div class="memo">${escapeHtml(race.nextMemo || "")}</div>
 
-          <button class="button secondary" data-view="list">記録一覧へ戻る</button>
+          <button class="button" data-action="editRace">この記録を編集する</button>
+          <button class="button secondary" data-action="backToList">記録一覧へ戻る</button>
+          <button class="button danger" data-action="deleteRace">この記録を削除する</button>
         </div>
       `;
 
-      document.querySelector("#raceDetail .button.secondary").addEventListener("click", () => {
-        showView("list");
-      });
+      bindDetailButtons();
     }
 
-    // ==============================
-    // イベント設定
-    // ==============================
+    function bindDetailButtons() {
+      const backButton = document.querySelector("[data-action='backToList']");
+      if (backButton) {
+        backButton.addEventListener("click", () => {
+          showView("list");
+        });
+      }
+
+      const editButton = document.querySelector("[data-action='editRace']");
+      if (editButton) {
+        editButton.addEventListener("click", () => {
+          startEditRace(currentRaceId);
+        });
+      }
+
+      const deleteButton = document.querySelector("[data-action='deleteRace']");
+      if (deleteButton) {
+        deleteButton.addEventListener("click", () => {
+          const ok = confirm("この記録を削除しますか？");
+          if (!ok) return;
+
+          raceLogs = raceLogs.filter(race => race.id !== currentRaceId);
+          currentRaceId = null;
+          editingRaceId = null;
+          saveToStorage();
+          renderAll();
+          resetFormMode();
+          showView("list");
+        });
+      }
+    }
+
+    function setValue(id, value) {
+      document.getElementById(id).value = value ?? "";
+    }
+
+    function getFormValue(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function getNumberValue(id) {
+      const value = document.getElementById(id).value;
+      return Number(value || 0);
+    }
+
+    function clearForm() {
+      const ids = [
+        "raceName", "year", "course", "grade", "decisionReason", "betType",
+        "bets", "investment", "first", "second", "third", "payout",
+        "review", "nextMemo"
+      ];
+
+      ids.forEach(id => setValue(id, ""));
+
+      setValue("decision", "買う");
+      setValue("reviewMainCause", "未回顧");
+    }
+
+    function resetFormMode() {
+      editingRaceId = null;
+      document.getElementById("formTitle").textContent = "新しい記録を追加";
+      document.getElementById("saveRaceButton").textContent = "保存する";
+      document.getElementById("editNotice").style.display = "none";
+      document.getElementById("cancelEditButton").style.display = "none";
+    }
+
+    function startEditRace(id) {
+      const race = raceLogs.find(item => item.id === id);
+      if (!race) return;
+
+      editingRaceId = id;
+
+      setValue("raceName", race.raceName);
+      setValue("year", race.year);
+      setValue("course", race.course);
+      setValue("grade", race.grade);
+      setValue("decision", race.decision || "買う");
+      setValue("decisionReason", race.decisionReason);
+      setValue("betType", race.betType);
+      setValue("bets", race.bets);
+      setValue("investment", race.investment);
+      setValue("first", race.result?.first || "");
+      setValue("second", race.result?.second || "");
+      setValue("third", race.result?.third || "");
+      setValue("payout", race.payout);
+      setValue("reviewMainCause", race.reviewMainCause || "未回顧");
+      setValue("review", race.review);
+      setValue("nextMemo", race.nextMemo);
+
+      document.getElementById("formTitle").textContent = "記録を編集";
+      document.getElementById("saveRaceButton").textContent = "上書き保存する";
+      document.getElementById("editNotice").style.display = "block";
+      document.getElementById("cancelEditButton").style.display = "block";
+
+      showView("add");
+    }
+
+    function buildRaceFromForm(existingRace) {
+      return {
+        id: existingRace?.id || makeId(),
+        createdAt: existingRace?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        raceName: getFormValue("raceName"),
+        year: getFormValue("year"),
+        course: getFormValue("course"),
+        grade: getFormValue("grade"),
+        decision: getFormValue("decision"),
+        decisionReason: getFormValue("decisionReason"),
+        betType: getFormValue("betType") || "未入力",
+        bets: getFormValue("bets"),
+        investment: getNumberValue("investment"),
+        payout: getNumberValue("payout"),
+        result: {
+          first: getFormValue("first"),
+          second: getFormValue("second"),
+          third: getFormValue("third")
+        },
+        reviewMainCause: getFormValue("reviewMainCause"),
+        review: getFormValue("review"),
+        nextMemo: getFormValue("nextMemo")
+      };
+    }
+
+    function saveRaceFromForm() {
+      const raceName = getFormValue("raceName");
+
+      if (!raceName) {
+        alert("レース名は入力してください。");
+        return;
+      }
+
+      if (editingRaceId) {
+        const index = raceLogs.findIndex(race => race.id === editingRaceId);
+
+        if (index === -1) {
+          alert("編集対象が見つかりません。新規保存に切り替えます。");
+          editingRaceId = null;
+          saveRaceFromForm();
+          return;
+        }
+
+        const updatedRace = buildRaceFromForm(raceLogs[index]);
+        raceLogs[index] = updatedRace;
+        currentRaceId = updatedRace.id;
+
+        saveToStorage();
+        renderAll();
+        clearForm();
+        resetFormMode();
+
+        alert("上書き保存しました。");
+        renderDetail();
+        showView("detail");
+        return;
+      }
+
+      const newRace = buildRaceFromForm(null);
+      raceLogs.unshift(newRace);
+      currentRaceId = newRace.id;
+
+      saveToStorage();
+      renderAll();
+      clearForm();
+      resetFormMode();
+
+      alert("保存しました。");
+      renderDetail();
+      showView("detail");
+    }
+
+    function exportJson() {
+      const json = JSON.stringify(raceLogs, null, 2);
+      document.getElementById("jsonBox").value = json;
+    }
+
+    async function copyJson() {
+      const jsonBox = document.getElementById("jsonBox");
+
+      if (!jsonBox.value.trim()) {
+        exportJson();
+      }
+
+      try {
+        await navigator.clipboard.writeText(jsonBox.value);
+        alert("JSONをコピーしました。");
+      } catch (error) {
+        jsonBox.select();
+        document.execCommand("copy");
+        alert("JSONをコピーしました。");
+      }
+    }
+
+    function importJson() {
+      const raw = document.getElementById("jsonBox").value.trim();
+
+      if (!raw) {
+        alert("読み込むJSONを貼ってください。");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (!Array.isArray(parsed)) {
+          alert("JSONの形式が違います。配列データが必要です。");
+          return;
+        }
+
+        const ok = confirm("現在のデータを、貼り付けたJSONで置き換えますか？");
+        if (!ok) return;
+
+        raceLogs = parsed.map(item => ({
+          id: item.id || makeId(),
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
+          raceName: item.raceName || "",
+          year: item.year || "",
+          course: item.course || "",
+          grade: item.grade || "",
+          decision: item.decision || "",
+          decisionReason: item.decisionReason || "",
+          betType: item.betType || "",
+          bets: item.bets || "",
+          investment: Number(item.investment || 0),
+          payout: Number(item.payout || 0),
+          result: {
+            first: item.result?.first || "",
+            second: item.result?.second || "",
+            third: item.result?.third || ""
+          },
+          reviewMainCause: item.reviewMainCause || "",
+          review: item.review || "",
+          nextMemo: item.nextMemo || ""
+        }));
+
+        currentRaceId = raceLogs[0]?.id || null;
+        editingRaceId = null;
+        saveToStorage();
+        renderAll();
+        resetFormMode();
+        clearForm();
+
+        alert("JSONを読み込みました。");
+        showView("list");
+      } catch (error) {
+        alert("JSONの読み込みに失敗しました。形式を確認してください。");
+      }
+    }
+
+    function deleteAllData() {
+      const first = confirm("全データを削除しますか？");
+      if (!first) return;
+
+      const second = confirm("本当に削除しますか？この操作は取り消せません。");
+      if (!second) return;
+
+      raceLogs = [];
+      currentRaceId = null;
+      editingRaceId = null;
+      saveToStorage();
+      renderAll();
+      resetFormMode();
+      clearForm();
+
+      alert("全データを削除しました。");
+      showView("home");
+    }
 
     document.querySelectorAll("[data-view]").forEach(button => {
       button.addEventListener("click", () => {
         const view = button.dataset.view;
 
-        if (view === "detail") {
-          renderDetail();
+        if (view === "add" && !editingRaceId) {
+          resetFormMode();
         }
 
         showView(view);
       });
     });
 
-    // ==============================
-    // 初期表示
-    // ==============================
+    document.getElementById("saveRaceButton").addEventListener("click", saveRaceFromForm);
 
-    renderHome();
-    renderRaceList();
-    renderDetail();
+    document.getElementById("clearFormButton").addEventListener("click", () => {
+      clearForm();
+    });
+
+    document.getElementById("cancelEditButton").addEventListener("click", () => {
+      const ok = confirm("編集をキャンセルしますか？入力中の内容は破棄されます。");
+      if (!ok) return;
+
+      clearForm();
+      resetFormMode();
+
+      if (currentRaceId) {
+        renderDetail();
+        showView("detail");
+      } else {
+        showView("list");
+      }
+    });
+
+    document.getElementById("exportButton").addEventListener("click", exportJson);
+    document.getElementById("copyJsonButton").addEventListener("click", copyJson);
+    document.getElementById("importButton").addEventListener("click", importJson);
+    document.getElementById("deleteAllButton").addEventListener("click", deleteAllData);
+
+    loadFromStorage();
+
+    if (raceLogs.length > 0) {
+      currentRaceId = raceLogs[0].id;
+    }
+
+    renderAll();
   </script>
 </body>
 </html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>おじ競馬ログ</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #181b22;
+      --card2: #20242d;
+      --text: #f2f2f2;
+      --muted: #a8adb8;
+      --line: #2d3340;
+      --accent: #f4c542;
+      --good: #6ee7a8;
+      --bad: #ff7b7b;
+      --blue: #7db7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+        "Yu Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding-bottom: 86px;
+    }
+
+    header {
+      padding: 24px 18px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #171a21 0%, #0f1115 100%);
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    main {
+      padding: 16px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    section {
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+    }
+
+    .card-light {
+      background: var(--card2);
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 12px;
+      border-left: 5px solid var(--accent);
+      padding-left: 10px;
+    }
+
+    h3 {
+      font-size: 17px;
+      margin: 18px 0 8px;
+      color: var(--accent);
+    }
+
+    p {
+      margin: 0 0 10px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .summary-box {
+      background: var(--card2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .summary-value {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .race-card {
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+
+    .race-card:active {
+      transform: scale(0.98);
+    }
+
+    .race-title {
+      font-size: 19px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .race-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #2a2f3a;
+      color: var(--text);
+      font-size: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .tag.good {
+      color: var(--good);
+      border-color: rgba(110,231,168,0.35);
+    }
+
+    .tag.bad {
+      color: var(--bad);
+      border-color: rgba(255,123,123,0.35);
+    }
+
+    .tag.blue {
+      color: var(--blue);
+      border-color: rgba(125,183,255,0.35);
+    }
+
+    .item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .value {
+      font-size: 16px;
+      font-weight: 650;
+      white-space: pre-wrap;
+    }
+
+    .big-number {
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .plus {
+      color: var(--good);
+    }
+
+    .minus {
+      color: var(--bad);
+    }
+
+    .zero {
+      color: var(--muted);
+    }
+
+    .memo {
+      background: #12151b;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+
+    .button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-top: 10px;
+      background: var(--accent);
+      color: #111;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .button.secondary {
+      background: #2a2f3a;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #11141a;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      z-index: 10;
+    }
+
+    nav button {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 4px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    nav button.active {
+      background: var(--card2);
+      color: var(--accent);
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="title">おじ競馬ログ</h1>
+    <p class="subtitle">買い目・結果・回顧を残す場所</p>
+  </header>
+
+  <main>
+    <!-- ホーム -->
+    <section id="home" class="active">
+      <div class="card">
+        <h2>通算成績</h2>
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="summary-label">投資額</div>
+            <div id="totalInvestment" class="summary-value">0円</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">払戻額</div>
+            <div id="totalPayout" class="summary-value">0円</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">回収率</div>
+            <div id="totalReturnRate" class="summary-value">—</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">記録数</div>
+            <div id="totalRaces" class="summary-value">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>このサイトの目的</h2>
+        <p>買ったレースも、見送ったレースも記録する。</p>
+        <p>目的は、当てた自慢ではなく、次に同じミスを減らすこと。</p>
+        <p class="small">最初は1レースだけでも十分。続けることを優先する。</p>
+        <button class="button" data-view="list">記録一覧を見る</button>
+      </div>
+    </section>
+
+    <!-- 記録一覧 -->
+    <section id="list">
+      <div class="card">
+        <h2>記録一覧</h2>
+        <div id="raceList"></div>
+      </div>
+    </section>
+
+    <!-- 詳細 -->
+    <section id="detail">
+      <div id="raceDetail"></div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="nav-button active" data-view="home">ホーム</button>
+    <button class="nav-button" data-view="list">記録一覧</button>
+    <button class="nav-button" data-view="detail">詳細</button>
+  </nav>
+
+  <script>
+    // ==============================
+    // レース記録データ
+    // ここを書き換えれば、表示内容を変更できる
+    // ==============================
+
+    const raceLogs = [
+      {
+        id: "nhk-mile-2026",
+        raceName: "NHKマイルカップ",
+        year: 2026,
+        course: "東京芝1600",
+        grade: "GⅠ",
+        decision: "見送り",
+        decisionReason:
+          "人気で軸を作らず、レース質から主軸を作ろうとしたが、主軸候補を1頭に絞れなかったため。",
+        betType: "なし",
+        bets: [
+          "買い目なし"
+        ],
+        investment: 0,
+        payout: 0,
+        result: {
+          first: "未入力",
+          second: "未入力",
+          third: "未入力"
+        },
+        reviewMainCause: "軸不在",
+        review:
+          "難しいレースと判断して見送り。\n人気に流されず、主軸不在として処理できた点はよかった。\n主軸不在なら、馬連・三連複でごまかさない。",
+        nextMemo:
+          "人気で軸を作らない。\nレース質から主軸を作れない場合は見送り。\n見送りも成績として記録する。"
+      },
+      {
+        id: "sample-buy-2026",
+        raceName: "サンプル重賞",
+        year: 2026,
+        course: "中山芝2000",
+        grade: "GⅡ",
+        decision: "買う",
+        decisionReason:
+          "主軸の負けパターンが少なく、準軸と相手本線も整理できたため。",
+        betType: "馬連",
+        bets: [
+          "◎ サンプルホースA － ○ サンプルホースB",
+          "◎ サンプルホースA － △ サンプルホースC",
+          "◎ サンプルホースA － △ サンプルホースD"
+        ],
+        investment: 300,
+        payout: 0,
+        result: {
+          first: "サンプルホースC",
+          second: "サンプルホースA",
+          third: "サンプルホースE"
+        },
+        reviewMainCause: "相手評価ミス",
+        review:
+          "主軸は馬券内に来たが、準軸の評価が甘かった。\n馬連で買う場合、準軸の信頼度が足りないと回収につながりにくい。",
+        nextMemo:
+          "主軸だけでなく、準軸の負けパターンも確認する。\n準軸が弱いときは、馬連ではなくワイド寄りに落とす。"
+      }
+    ];
+
+    let currentRaceId = raceLogs[0].id;
+
+    // ==============================
+    // 共通関数
+    // ==============================
+
+    function yen(num) {
+      return Number(num).toLocaleString("ja-JP") + "円";
+    }
+
+    function calcReturnRate(investment, payout) {
+      if (!investment || investment === 0) return "—";
+      return Math.round((payout / investment) * 100) + "%";
+    }
+
+    function profitClass(investment, payout) {
+      const profit = payout - investment;
+      if (profit > 0) return "plus";
+      if (profit < 0) return "minus";
+      return "zero";
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll("section").forEach(section => {
+        section.classList.remove("active");
+      });
+
+      document.getElementById(viewId).classList.add("active");
+
+      document.querySelectorAll(".nav-button").forEach(button => {
+        button.classList.toggle("active", button.dataset.view === viewId);
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ==============================
+    // ホーム描画
+    // ==============================
+
+    function renderHome() {
+      const totalInvestment = raceLogs.reduce((sum, race) => sum + race.investment, 0);
+      const totalPayout = raceLogs.reduce((sum, race) => sum + race.payout, 0);
+      const totalReturnRate = calcReturnRate(totalInvestment, totalPayout);
+
+      document.getElementById("totalInvestment").textContent = yen(totalInvestment);
+      document.getElementById("totalPayout").textContent = yen(totalPayout);
+      document.getElementById("totalReturnRate").textContent = totalReturnRate;
+      document.getElementById("totalRaces").textContent = raceLogs.length + "件";
+    }
+
+    // ==============================
+    // 一覧描画
+    // ==============================
+
+    function renderRaceList() {
+      const raceList = document.getElementById("raceList");
+      raceList.innerHTML = "";
+
+      raceLogs.forEach(race => {
+        const card = document.createElement("div");
+        card.className = "card card-light race-card";
+        card.dataset.id = race.id;
+
+        const returnRate = calcReturnRate(race.investment, race.payout);
+        const profit = race.payout - race.investment;
+        const pClass = profitClass(race.investment, race.payout);
+
+        card.innerHTML = `
+          <div class="race-title">${race.raceName} ${race.year}</div>
+          <div class="race-meta">${race.course} / ${race.grade}</div>
+          <div class="tag-row">
+            <span class="tag blue">${race.decision}</span>
+            <span class="tag">${race.betType}</span>
+            <span class="tag">投資 ${yen(race.investment)}</span>
+            <span class="tag">払戻 ${yen(race.payout)}</span>
+            <span class="tag ${pClass}">収支 ${yen(profit)}</span>
+            <span class="tag">回収率 ${returnRate}</span>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          currentRaceId = race.id;
+          renderDetail();
+          showView("detail");
+        });
+
+        raceList.appendChild(card);
+      });
+    }
+
+    // ==============================
+    // 詳細描画
+    // ==============================
+
+    function renderDetail() {
+      const race = raceLogs.find(item => item.id === currentRaceId) || raceLogs[0];
+      const returnRate = calcReturnRate(race.investment, race.payout);
+      const profit = race.payout - race.investment;
+      const pClass = profitClass(race.investment, race.payout);
+
+      const betHtml = race.bets.map(bet => `<div class="item"><div class="value">${bet}</div></div>`).join("");
+
+      document.getElementById("raceDetail").innerHTML = `
+        <div class="card">
+          <h2>${race.raceName} ${race.year}</h2>
+          <p class="small">${race.course} / ${race.grade}</p>
+
+          <div class="tag-row">
+            <span class="tag blue">${race.decision}</span>
+            <span class="tag">${race.betType}</span>
+            <span class="tag ${pClass}">収支 ${yen(profit)}</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>買う前判断</h2>
+
+          <div class="item">
+            <div class="label">判断</div>
+            <div class="value">${race.decision}</div>
+          </div>
+
+          <div class="item">
+            <div class="label">判断理由</div>
+            <div class="value">${race.decisionReason}</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>買い目</h2>
+
+          <div class="item">
+            <div class="label">券種</div>
+            <div class="value">${race.betType}</div>
+          </div>
+
+          ${betHtml}
+
+          <div class="item">
+            <div class="label">投資額</div>
+            <div class="value">${yen(race.investment)}</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>結果</h2>
+
+          <div class="item">
+            <div class="label">1着</div>
+            <div class="value">${race.result.first}</div>
+          </div>
+
+          <div class="item">
+            <div class="label">2着</div>
+            <div class="value">${race.result.second}</div>
+          </div>
+
+          <div class="item">
+            <div class="label">3着</div>
+            <div class="value">${race.result.third}</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>収支</h2>
+
+          <div class="summary-grid">
+            <div class="summary-box">
+              <div class="summary-label">投資額</div>
+              <div class="summary-value">${yen(race.investment)}</div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-label">払戻額</div>
+              <div class="summary-value">${yen(race.payout)}</div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-label">収支</div>
+              <div class="summary-value ${pClass}">${yen(profit)}</div>
+            </div>
+
+            <div class="summary-box">
+              <div class="summary-label">回収率</div>
+              <div class="summary-value">${returnRate}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>回顧</h2>
+
+          <div class="item">
+            <div class="label">主因</div>
+            <div class="value">${race.reviewMainCause}</div>
+          </div>
+
+          <h3>回顧メモ</h3>
+          <div class="memo">${race.review}</div>
+
+          <h3>次回メモ</h3>
+          <div class="memo">${race.nextMemo}</div>
+
+          <button class="button secondary" data-view="list">記録一覧へ戻る</button>
+        </div>
+      `;
+
+      document.querySelector("#raceDetail .button.secondary").addEventListener("click", () => {
+        showView("list");
+      });
+    }
+
+    // ==============================
+    // イベント設定
+    // ==============================
+
+    document.querySelectorAll("[data-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        const view = button.dataset.view;
+
+        if (view === "detail") {
+          renderDetail();
+        }
+
+        showView(view);
+      });
+    });
+
+    // ==============================
+    // 初期表示
+    // ==============================
+
+    renderHome();
+    renderRaceList();
+    renderDetail();
+  </script>
+</body>
+</html>

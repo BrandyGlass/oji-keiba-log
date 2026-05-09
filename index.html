@@ -247,6 +247,14 @@
       resize: vertical;
     }
 
+    #aiJsonInput,
+    #jsonBox {
+      min-height: 220px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
     .button {
       width: 100%;
       border: none;
@@ -291,6 +299,12 @@
       text-align: center;
       color: var(--muted);
       padding: 28px 10px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 20px 0;
     }
 
     nav {
@@ -344,6 +358,7 @@
   </header>
 
   <main>
+    <!-- ホーム -->
     <section id="home" class="active">
       <div class="card">
         <h2>通算成績</h2>
@@ -385,11 +400,12 @@
         <h2>このサイトの目的</h2>
         <p>買ったレースも、見送ったレースも記録する。</p>
         <p>目的は、当てた自慢ではなく、次に同じミスを減らすこと。</p>
-        <button class="button" data-view="add">新しい記録を追加する</button>
+        <button class="button" data-view="add">AI回顧JSONから追加する</button>
         <button class="button secondary" data-view="list">記録一覧を見る</button>
       </div>
     </section>
 
+    <!-- 一覧 -->
     <section id="list">
       <div class="card">
         <h2>記録一覧</h2>
@@ -397,9 +413,47 @@
       </div>
     </section>
 
+    <!-- 追加 -->
     <section id="add">
       <div class="card">
-        <h2 id="formTitle">新しい記録を追加</h2>
+        <h2>AI回顧JSONから追加</h2>
+        <p class="small">
+          ChatGPTの結果後検証で出した「サイト保存用JSON」をここに貼る。
+        </p>
+
+        <label for="aiJsonInput">サイト保存用JSON</label>
+        <textarea id="aiJsonInput" placeholder='{
+  "raceName": "NHKマイルカップ",
+  "year": "2026",
+  "course": "東京芝1600",
+  "grade": "GⅠ",
+  "decision": "見送り",
+  "decisionReason": "主軸不在のため。",
+  "betType": "なし",
+  "bets": "買い目なし",
+  "investment": 0,
+  "payout": 0,
+  "result": {
+    "first": "",
+    "second": "",
+    "third": ""
+  },
+  "reviewMainCause": "軸不在",
+  "review": "回顧全文",
+  "nextMemo": "次回修正点",
+  "finalEvaluation": "ルール継続"
+}'></textarea>
+
+        <button class="button" id="saveAiJsonButton">AI回顧JSONを保存する</button>
+        <button class="button secondary" id="clearAiJsonButton">JSON欄を消す</button>
+
+        <div class="notice">
+          JSONの前後に ```json や ``` が入っていても、できるだけ自動で取り除いて読み込みます。
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="formTitle">手入力で追加・編集</h2>
 
         <div id="editNotice" class="notice editing" style="display:none;">
           編集中です。保存すると、この記録を上書きします。
@@ -463,6 +517,7 @@
           <option value="枠順評価ミス">枠順評価ミス</option>
           <option value="ローテ評価ミス">ローテ評価ミス</option>
           <option value="状態評価ミス">状態評価ミス</option>
+          <option value="人気に引っ張られた軸選定ミス">人気に引っ張られた軸選定ミス</option>
           <option value="保留の扱いミス">保留の扱いミス</option>
           <option value="消し馬の激走">消し馬の激走</option>
           <option value="買い方ミス">買い方ミス</option>
@@ -477,20 +532,31 @@
         <label for="nextMemo">次回メモ</label>
         <textarea id="nextMemo"></textarea>
 
+        <label for="finalEvaluation">最終評価</label>
+        <select id="finalEvaluation">
+          <option value="">未入力</option>
+          <option value="ルール継続">ルール継続</option>
+          <option value="条件付き継続">条件付き継続</option>
+          <option value="ルール修正候補">ルール修正候補</option>
+          <option value="不採用候補">不採用候補</option>
+        </select>
+
         <button class="button" id="saveRaceButton">保存する</button>
         <button class="button secondary" id="cancelEditButton" style="display:none;">編集をキャンセル</button>
         <button class="button secondary" id="clearFormButton">入力を消す</button>
 
         <div class="notice">
-          保存した記録は、この端末のブラウザ内に保存されます。バックアップは「管理」画面のJSON書き出しを使います。
+          普段は上のAI回顧JSON保存を使う。手入力は修正用・追加用。
         </div>
       </div>
     </section>
 
+    <!-- 詳細 -->
     <section id="detail">
       <div id="raceDetail"></div>
     </section>
 
+    <!-- 管理 -->
     <section id="manage">
       <div class="card">
         <h2>データ管理</h2>
@@ -525,7 +591,7 @@
   </nav>
 
   <script>
-    const STORAGE_KEY = "oji_keiba_log_v03";
+    const STORAGE_KEY = "oji_keiba_log_v04";
 
     let raceLogs = [];
     let currentRaceId = null;
@@ -537,7 +603,7 @@
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         raceName: "NHKマイルカップ",
-        year: 2026,
+        year: "2026",
         course: "東京芝1600",
         grade: "GⅠ",
         decision: "見送り",
@@ -553,7 +619,8 @@
         },
         reviewMainCause: "軸不在",
         review: "難しいレースと判断して見送り。\n人気に流されず、主軸不在として処理できた点はよかった。",
-        nextMemo: "主軸不在なら、馬連・三連複でごまかさない。\n見送りも成績として記録する。"
+        nextMemo: "主軸不在なら、馬連・三連複でごまかさない。\n見送りも成績として記録する。",
+        finalEvaluation: "ルール継続"
       }
     ];
 
@@ -594,10 +661,11 @@
     }
 
     function loadFromStorage() {
-      const rawV03 = localStorage.getItem(STORAGE_KEY);
+      const rawV04 = localStorage.getItem("oji_keiba_log_v04");
+      const rawV03 = localStorage.getItem("oji_keiba_log_v03");
       const rawV02 = localStorage.getItem("oji_keiba_log_v02");
 
-      const raw = rawV03 || rawV02;
+      const raw = rawV04 || rawV03 || rawV02;
 
       if (!raw) {
         raceLogs = sampleData;
@@ -607,12 +675,39 @@
 
       try {
         const parsed = JSON.parse(raw);
-        raceLogs = Array.isArray(parsed) ? parsed : [];
+        raceLogs = Array.isArray(parsed) ? parsed.map(normalizeRaceData) : [];
         saveToStorage();
       } catch (error) {
         raceLogs = [];
         alert("保存データの読み込みに失敗しました。");
       }
+    }
+
+    function normalizeRaceData(item) {
+      return {
+        id: item.id || makeId(),
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
+        raceName: item.raceName || "",
+        year: String(item.year || ""),
+        course: item.course || "",
+        grade: item.grade || "",
+        decision: item.decision || "",
+        decisionReason: item.decisionReason || "",
+        betType: item.betType || "",
+        bets: item.bets || "",
+        investment: Number(item.investment || 0),
+        payout: Number(item.payout || 0),
+        result: {
+          first: item.result?.first || "",
+          second: item.result?.second || "",
+          third: item.result?.third || ""
+        },
+        reviewMainCause: item.reviewMainCause || "",
+        review: item.review || "",
+        nextMemo: item.nextMemo || "",
+        finalEvaluation: item.finalEvaluation || ""
+      };
     }
 
     function showView(viewId) {
@@ -690,6 +785,7 @@
             <span class="tag">払戻 ${yen(payout)}</span>
             <span class="tag ${pClass}">収支 ${yen(profit)}</span>
             <span class="tag">回収率 ${returnRate}</span>
+            ${race.finalEvaluation ? `<span class="tag">${escapeHtml(race.finalEvaluation)}</span>` : ""}
           </div>
         `;
 
@@ -732,6 +828,7 @@
             <span class="tag blue">${escapeHtml(race.decision || "未入力")}</span>
             <span class="tag">${escapeHtml(race.betType || "券種未入力")}</span>
             <span class="tag ${pClass}">収支 ${yen(profit)}</span>
+            ${race.finalEvaluation ? `<span class="tag">${escapeHtml(race.finalEvaluation)}</span>` : ""}
           </div>
         </div>
 
@@ -814,6 +911,9 @@
           <h3>次回メモ</h3>
           <div class="memo">${escapeHtml(race.nextMemo || "")}</div>
 
+          <h3>最終評価</h3>
+          <div class="memo">${escapeHtml(race.finalEvaluation || "未入力")}</div>
+
           <button class="button" data-action="editRace">この記録を編集する</button>
           <button class="button secondary" data-action="backToList">記録一覧へ戻る</button>
           <button class="button danger" data-action="deleteRace">この記録を削除する</button>
@@ -879,11 +979,12 @@
 
       setValue("decision", "買う");
       setValue("reviewMainCause", "未回顧");
+      setValue("finalEvaluation", "");
     }
 
     function resetFormMode() {
       editingRaceId = null;
-      document.getElementById("formTitle").textContent = "新しい記録を追加";
+      document.getElementById("formTitle").textContent = "手入力で追加・編集";
       document.getElementById("saveRaceButton").textContent = "保存する";
       document.getElementById("editNotice").style.display = "none";
       document.getElementById("cancelEditButton").style.display = "none";
@@ -911,6 +1012,7 @@
       setValue("reviewMainCause", race.reviewMainCause || "未回顧");
       setValue("review", race.review);
       setValue("nextMemo", race.nextMemo);
+      setValue("finalEvaluation", race.finalEvaluation || "");
 
       document.getElementById("formTitle").textContent = "記録を編集";
       document.getElementById("saveRaceButton").textContent = "上書き保存する";
@@ -921,7 +1023,7 @@
     }
 
     function buildRaceFromForm(existingRace) {
-      return {
+      return normalizeRaceData({
         id: existingRace?.id || makeId(),
         createdAt: existingRace?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -942,8 +1044,9 @@
         },
         reviewMainCause: getFormValue("reviewMainCause"),
         review: getFormValue("review"),
-        nextMemo: getFormValue("nextMemo")
-      };
+        nextMemo: getFormValue("nextMemo"),
+        finalEvaluation: getFormValue("finalEvaluation")
+      });
     }
 
     function saveRaceFromForm() {
@@ -993,6 +1096,89 @@
       showView("detail");
     }
 
+    function cleanJsonText(rawText) {
+      let text = String(rawText || "").trim();
+
+      if (!text) return "";
+
+      text = text.replace(/^```json\s*/i, "");
+      text = text.replace(/^```\s*/i, "");
+      text = text.replace(/```$/i, "");
+      text = text.trim();
+
+      const firstBrace = text.indexOf("{");
+      const lastBrace = text.lastIndexOf("}");
+
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        text = text.slice(firstBrace, lastBrace + 1);
+      }
+
+      return text;
+    }
+
+    function saveAiJson() {
+      const raw = document.getElementById("aiJsonInput").value;
+      const cleaned = cleanJsonText(raw);
+
+      if (!cleaned) {
+        alert("AI回顧JSONを貼ってください。");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(cleaned);
+
+        if (Array.isArray(parsed)) {
+          alert("配列ではなく、1レース分のJSONオブジェクトを貼ってください。");
+          return;
+        }
+
+        if (!parsed.raceName) {
+          alert("raceName がありません。サイト保存用JSONの形式を確認してください。");
+          return;
+        }
+
+        const race = normalizeRaceData({
+          id: makeId(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          raceName: parsed.raceName,
+          year: parsed.year,
+          course: parsed.course,
+          grade: parsed.grade,
+          decision: parsed.decision,
+          decisionReason: parsed.decisionReason,
+          betType: parsed.betType,
+          bets: parsed.bets,
+          investment: parsed.investment,
+          payout: parsed.payout,
+          result: {
+            first: parsed.result?.first || parsed.first || "",
+            second: parsed.result?.second || parsed.second || "",
+            third: parsed.result?.third || parsed.third || ""
+          },
+          reviewMainCause: parsed.reviewMainCause,
+          review: parsed.review,
+          nextMemo: parsed.nextMemo,
+          finalEvaluation: parsed.finalEvaluation
+        });
+
+        raceLogs.unshift(race);
+        currentRaceId = race.id;
+
+        saveToStorage();
+        renderAll();
+
+        document.getElementById("aiJsonInput").value = "";
+
+        alert("AI回顧JSONを保存しました。");
+        renderDetail();
+        showView("detail");
+      } catch (error) {
+        alert("JSONの読み込みに失敗しました。カンマ、ダブルクォート、改行位置を確認してください。");
+      }
+    }
+
     function exportJson() {
       const json = JSON.stringify(raceLogs, null, 2);
       document.getElementById("jsonBox").value = json;
@@ -1034,32 +1220,11 @@
         const ok = confirm("現在のデータを、貼り付けたJSONで置き換えますか？");
         if (!ok) return;
 
-        raceLogs = parsed.map(item => ({
-          id: item.id || makeId(),
-          createdAt: item.createdAt || new Date().toISOString(),
-          updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
-          raceName: item.raceName || "",
-          year: item.year || "",
-          course: item.course || "",
-          grade: item.grade || "",
-          decision: item.decision || "",
-          decisionReason: item.decisionReason || "",
-          betType: item.betType || "",
-          bets: item.bets || "",
-          investment: Number(item.investment || 0),
-          payout: Number(item.payout || 0),
-          result: {
-            first: item.result?.first || "",
-            second: item.result?.second || "",
-            third: item.result?.third || ""
-          },
-          reviewMainCause: item.reviewMainCause || "",
-          review: item.review || "",
-          nextMemo: item.nextMemo || ""
-        }));
+        raceLogs = parsed.map(normalizeRaceData);
 
         currentRaceId = raceLogs[0]?.id || null;
         editingRaceId = null;
+
         saveToStorage();
         renderAll();
         resetFormMode();
@@ -1082,6 +1247,7 @@
       raceLogs = [];
       currentRaceId = null;
       editingRaceId = null;
+
       saveToStorage();
       renderAll();
       resetFormMode();
@@ -1101,6 +1267,11 @@
 
         showView(view);
       });
+    });
+
+    document.getElementById("saveAiJsonButton").addEventListener("click", saveAiJson);
+    document.getElementById("clearAiJsonButton").addEventListener("click", () => {
+      document.getElementById("aiJsonInput").value = "";
     });
 
     document.getElementById("saveRaceButton").addEventListener("click", saveRaceFromForm);
